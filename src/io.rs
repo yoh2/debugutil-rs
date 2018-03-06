@@ -129,17 +129,17 @@ impl ErrorRaisingSeeker {
     /// assert!(s.seek(SeekFrom::Start(10)).is_err());
     /// # }
     /// ```
-
     pub fn new(end_pos: u64, raise_after: usize) -> Self {
         Self { curr_pos: 0, end_pos, raise_after }
     }
 
-    fn checked_calc_offset(base: u64, offset: i64) -> Option<u64> {
-        if offset >= 0 {
+    fn calc_offset_or_error(base: u64, offset: i64) -> Result<u64> {
+        let new_pos = if offset >= 0 {
             base.checked_add(offset as u64)
         } else {
             offset.checked_neg().and_then(|abs_offset| base.checked_sub(abs_offset as u64))
-        }
+        };
+        new_pos.ok_or_else(Self::pos_calc_error)
     }
 
     fn pos_calc_error() -> Error {
@@ -159,10 +159,10 @@ impl Seek for ErrorRaisingSeeker {
                 offset
             },
             SeekFrom::End(offset) => {
-                try!(ErrorRaisingSeeker::checked_calc_offset(self.end_pos, offset).ok_or_else(Self::pos_calc_error))
+                try!(Self::calc_offset_or_error(self.end_pos, offset))
             },
             SeekFrom::Current(offset) => {
-                try!(ErrorRaisingSeeker::checked_calc_offset(self.curr_pos, offset).ok_or_else(Self::pos_calc_error))
+                try!(Self::calc_offset_or_error(self.curr_pos, offset))
             },
         };
         Ok(self.curr_pos)
