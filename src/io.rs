@@ -155,15 +155,9 @@ impl Seek for ErrorRaisingSeeker {
 
         self.raise_after -= 1;
         self.curr_pos = match pos {
-            SeekFrom::Start(offset) => {
-                offset
-            },
-            SeekFrom::End(offset) => {
-                try!(Self::calc_offset_or_error(self.end_pos, offset))
-            },
-            SeekFrom::Current(offset) => {
-                try!(Self::calc_offset_or_error(self.curr_pos, offset))
-            },
+            SeekFrom::Start(offset)   => offset,
+            SeekFrom::End(offset)     => try!(Self::calc_offset_or_error(self.end_pos, offset)),
+            SeekFrom::Current(offset) => try!(Self::calc_offset_or_error(self.curr_pos, offset)),
         };
         Ok(self.curr_pos)
     }

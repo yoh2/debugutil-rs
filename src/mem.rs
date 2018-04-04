@@ -14,7 +14,7 @@ pub fn dump<T>(obj: &T) {
         match i % 16 {
             0  => print!("{:04x}: {:02x}", i, b),
             8  => print!("  {:02x}", b),
-            16 => println!(" {:02x}", b),
+            15 => println!(" {:02x}", b),
             _  => print!(" {:02x}", b),
         }
     }
